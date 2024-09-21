@@ -6,12 +6,13 @@ import {
   Patch,
   Param,
   Delete,
-  HttpStatus,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { ToursService } from './tours.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
+import { TourQueries } from './entities/tour.entity';
 
 @Controller('tours')
 export class ToursController {
@@ -23,18 +24,18 @@ export class ToursController {
   }
 
   @Get()
-  findAll() {
-    return this.toursService.findAll();
+  findAll(@Query() query: TourQueries) {
+    return this.toursService.findAll(query);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.toursService.findOne(+id);
+    return this.toursService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTourDto: UpdateTourDto) {
-    return this.toursService.update(+id, updateTourDto);
+    return this.toursService.update(id, updateTourDto);
   }
 
   @HttpCode(204)
