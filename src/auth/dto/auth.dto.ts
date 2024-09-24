@@ -1,15 +1,13 @@
 import {
-  Equals,
   IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
   MinLength,
-  ValidateIf,
 } from 'class-validator';
 import { Match } from '../decorators/match.decorator';
 
-export class CreateAuthDto {
+export class SignAuthDto {
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -31,4 +29,14 @@ export class CreateAuthDto {
   @IsNotEmpty()
   @Match('password', { message: 'Passwords do not match' })
   passwordConfirm: string;
+}
+
+export class LoginAuthDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }

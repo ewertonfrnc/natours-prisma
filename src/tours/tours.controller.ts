@@ -10,9 +10,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { ToursService } from './tours.service';
+import { TourQueries } from './entities/tour.entity';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
-import { TourQueries } from './entities/tour.entity';
 
 @Controller('tours')
 export class ToursController {

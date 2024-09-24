@@ -1,21 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
 
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { LoginAuthDto, SignAuthDto } from './dto/auth.dto';
 import { DatabaseService } from '../database/database.service';
 import { ConfigService } from '@nestjs/config';
-import { config } from 'rxjs';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private jwt: JwtService,
     private db: DatabaseService,
     private config: ConfigService,
   ) {}
 
-  async create(createAuthDto: CreateAuthDto) {
+  signToken(userId: string) {
+    const secret = this.config.get('JWT_SECRET');
+    const expiresIn = this.config.get('JWT_EXPIRES_IN');
+    return this.jwt.sign({ id: userId }, { secret, expiresIn });
+  }
+
+  async signup(createAuthDto: SignAuthDto) {
     try {
       const passwordHash = await bcrypt.hash(createAuthDto.password, 12);
 
@@ -30,9 +35,7 @@ export class AuthService {
         omit: { password: true, passwordConfirm: true },
       });
 
-      const secret = this.config.get('JWT_SECRET');
-      const expiresIn = this.config.get('JWT_EXPIRES_IN');
-      const token = jwt.sign({ id: user.id }, secret, { expiresIn });
+      const token = this.signToken(user.id);
 
       return { status: 'success', user, token };
     } catch (e) {
@@ -40,19 +43,26 @@ export class AuthService {
     }
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async login(loginAuthDto: LoginAuthDto) {
+    try {
+      const user = await this.db.user.findUnique({
+        where: { email: loginAuthDto.email },
+      });
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+      const samePassword = await bcrypt.compare(
+        loginAuthDto.password,
+        user.password,
+      );
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+      if (!user || !samePassword) {
+        return new UnauthorizedException('Incorrect email or password');
+      }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+      const token = this.signToken(user.id);
+
+      return { status: 'success', token };
+    } catch (e) {
+      return { status: 'fail', error: e.message };
+    }
   }
 }
