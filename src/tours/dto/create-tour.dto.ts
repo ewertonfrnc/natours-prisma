@@ -60,4 +60,8 @@ export class CreateTourDto {
 
   @IsArray()
   startDates: string[];
+
+  @IsArray()
+  @IsNotEmpty()
+  guides: string[];
 }

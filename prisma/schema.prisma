@@ -33,6 +33,8 @@ model Tour {
   ratingsQuantity Int?     @default(0)
   startDates      String[]
 
+  guides User[]
+
   @@map("Tours")
 }
 
@@ -46,6 +48,8 @@ model User {
   passwordConfirm   String
   passwordChangedAt DateTime @default(now())
   roles             String[] @default(["user"])
+
+  tours Tour[]
 
   @@map("Users")
 }

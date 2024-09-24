@@ -12,7 +12,24 @@ export class ToursService {
 
   async create(createTourDto: CreateTourDto) {
     try {
-      const newTour = await this.db.tour.create({ data: createTourDto });
+      const newTour = await this.db.tour.create({
+        data: {
+          ...createTourDto,
+          guides: {
+            connect: createTourDto.guides.map((guideId) => ({ id: guideId })),
+          },
+        },
+        include: {
+          guides: {
+            omit: {
+              password: true,
+              passwordConfirm: true,
+              passwordChangedAt: true,
+            },
+          },
+        },
+      });
+
       return { status: 'success', data: newTour };
     } catch (e) {
       return { status: 'fail', error: e };
@@ -44,6 +61,7 @@ export class ToursService {
         select: fields,
         skip,
         take: limit,
+        // include: { guides: true },
       });
 
       return {
@@ -69,7 +87,7 @@ export class ToursService {
     try {
       const updateTour = await this.db.tour.update({
         where: { uId },
-        data: updateTourDto,
+        data: { ...updateTourDto, guides: {} },
       });
 
       return { status: 'success', data: updateTour };
