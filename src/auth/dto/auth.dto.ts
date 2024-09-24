@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -6,6 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Match } from '../decorators/match.decorator';
+import { Role } from '../enums/role.enum';
 
 export class SignAuthDto {
   @IsString()
@@ -29,6 +31,10 @@ export class SignAuthDto {
   @IsNotEmpty()
   @Match('password', { message: 'Passwords do not match' })
   passwordConfirm: string;
+
+  @IsArray()
+  @IsOptional()
+  roles: Role[];
 }
 
 export class LoginAuthDto {

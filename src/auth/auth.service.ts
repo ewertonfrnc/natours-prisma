@@ -29,6 +29,7 @@ export class AuthService {
           name: createAuthDto.name,
           email: createAuthDto.email,
           photo: createAuthDto.photo,
+          roles: createAuthDto.roles || ['user'],
           password: passwordHash,
           passwordConfirm: '',
         },

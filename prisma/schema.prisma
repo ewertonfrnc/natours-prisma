@@ -45,6 +45,7 @@ model User {
   password          String
   passwordConfirm   String
   passwordChangedAt DateTime @default(now())
+  roles             String[] @default(["user"])
 
   @@map("Users")
 }

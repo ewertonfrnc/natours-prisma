@@ -78,7 +78,7 @@ export class ToursService {
     }
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} tour`;
   }
 }
