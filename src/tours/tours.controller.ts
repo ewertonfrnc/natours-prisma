@@ -9,16 +9,23 @@ import {
   HttpCode,
   Query,
 } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { ToursService } from './tours.service';
 import { TourQueries } from './entities/tour.entity';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { Role } from '../auth/enums/role.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { ReviewsService } from '../reviews/reviews.service';
+import { CreateReviewDto } from '../reviews/dto/create-review.dto';
+import { User as ReqUser } from '../utils/decorators/user.decorator';
 
 @Controller('tours')
 export class ToursController {
-  constructor(private readonly toursService: ToursService) {}
+  constructor(
+    private readonly toursService: ToursService,
+    private reviewService: ReviewsService,
+  ) {}
 
   @Post()
   create(@Body() createTourDto: CreateTourDto) {
@@ -45,5 +52,22 @@ export class ToursController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.toursService.remove(id);
+  }
+
+  @Post(':tourId/reviews')
+  createTourReview(
+    @Param('tourId') tourId: string,
+    @ReqUser() user: User,
+    @Body() dto: CreateReviewDto,
+  ) {
+    if (!dto.tourId) dto.tourId = +tourId;
+    if (!dto.userId) dto.userId = user.id;
+
+    return this.reviewService.create(dto);
+  }
+
+  @Get(':tourId/reviews')
+  findAllTourReviews(@Param('tourId') tourId: string) {
+    return this.reviewService.findTourReviews(Number(tourId));
   }
 }

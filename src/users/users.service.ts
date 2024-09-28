@@ -1,15 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class UsersService {
+  constructor(private db: DatabaseService) {}
+
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    try {
+      const users = await this.db.user.findMany();
+      return { status: 'success', data: users };
+    } catch (e) {
+      return { status: 'failed', error: e };
+    }
   }
 
   findOne(id: number) {

@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CreateReviewDto {
   @IsString()
@@ -12,10 +19,10 @@ export class CreateReviewDto {
   rating: number;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   userId: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   tourId: number;
 }

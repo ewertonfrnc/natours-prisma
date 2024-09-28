@@ -50,4 +50,17 @@ export class ReviewsService {
   remove(id: number) {
     return `This action removes a #${id} review`;
   }
+
+  async findTourReviews(tourId: number) {
+    try {
+      const reviews = await this.db.review.findMany({
+        where: { tourId },
+        include: { User: { select: { name: true } } },
+      });
+
+      return { status: 'success', results: reviews.length, reviews };
+    } catch (e) {
+      return { status: 'failed', error: e };
+    }
+  }
 }

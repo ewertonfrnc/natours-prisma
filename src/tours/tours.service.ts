@@ -76,8 +76,16 @@ export class ToursService {
 
   async findOne(id: string) {
     try {
-      const tour = await this.db.tour.findUnique({ where: { uId: id } });
-      return { status: 'success', data: tour };
+      const tour = await this.db.tour.findUnique({
+        where: { uId: id },
+        include: {
+          reviews: {
+            include: { User: { select: { id: true, name: true } } },
+          },
+        },
+      });
+
+      return { status: 'success', tour };
     } catch (e) {
       return { status: 'fail', error: e };
     }
