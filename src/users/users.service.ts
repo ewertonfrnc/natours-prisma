@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from '../database/database.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -30,5 +31,9 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  getMe(user: User) {
+    return { status: 'success', user };
   }
 }
