@@ -1,11 +1,11 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -17,7 +17,7 @@ import { Role } from '../auth/enums/role.enum';
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
-  @Roles(Role.User)
+  @Roles(Role.User, Role.Admin)
   @Post()
   create(@Body() createReviewDto: CreateReviewDto) {
     return this.reviewsService.create(createReviewDto);
@@ -33,11 +33,13 @@ export class ReviewsController {
     return this.reviewsService.findOne(+id);
   }
 
+  @Roles(Role.User, Role.Admin)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
     return this.reviewsService.update(+id, updateReviewDto);
   }
 
+  @Roles(Role.User, Role.Admin)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.reviewsService.remove(+id);

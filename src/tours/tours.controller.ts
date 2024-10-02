@@ -1,12 +1,12 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
   HttpCode,
+  Param,
+  Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
@@ -19,6 +19,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { ReviewsService } from '../reviews/reviews.service';
 import { CreateReviewDto } from '../reviews/dto/create-review.dto';
 import { User as ReqUser } from '../utils/decorators/user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('tours')
 export class ToursController {
@@ -27,27 +28,31 @@ export class ToursController {
     private reviewService: ReviewsService,
   ) {}
 
+  @Roles(Role.Admin, Role.LeadGuide)
   @Post()
   create(@Body() createTourDto: CreateTourDto) {
     return this.toursService.create(createTourDto);
   }
 
+  @Public()
   @Get()
   findAll(@Query() query: TourQueries) {
     return this.toursService.findAll(query);
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.toursService.findOne(id);
   }
 
+  @Roles(Role.Admin, Role.LeadGuide)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTourDto: UpdateTourDto) {
     return this.toursService.update(id, updateTourDto);
   }
 
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.LeadGuide)
   @HttpCode(204)
   @Delete(':id')
   remove(@Param('id') id: string) {
