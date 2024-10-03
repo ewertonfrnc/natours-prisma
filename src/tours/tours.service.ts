@@ -4,7 +4,6 @@ import { DatabaseService } from '../database/database.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { TourQueries } from './entities/tour.entity';
-import { getFields } from '../utils/api-features.utils';
 
 @Injectable()
 export class ToursService {
@@ -12,7 +11,24 @@ export class ToursService {
 
   async create(createTourDto: CreateTourDto) {
     try {
-      const newTour = await this.db.tour.create({ data: createTourDto });
+      const newTour = await this.db.tour.create({
+        data: {
+          ...createTourDto,
+          guides: {
+            connect: createTourDto.guides.map((guideId) => ({ id: guideId })),
+          },
+        },
+        include: {
+          guides: {
+            omit: {
+              password: true,
+              passwordConfirm: true,
+              passwordChangedAt: true,
+            },
+          },
+        },
+      });
+
       return { status: 'success', data: newTour };
     } catch (e) {
       return { status: 'fail', error: e };
@@ -33,17 +49,15 @@ export class ToursService {
           })
         : [{ createdAt: 'desc' }];
 
-      const fields = query.fields ? getFields(query.fields.split(',')) : null;
-
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 100;
       const skip = (page - 1) * limit;
 
       const tours = await this.db.tour.findMany({
-        orderBy: sortBy,
-        select: fields,
         skip,
         take: limit,
+        orderBy: sortBy,
+        include: { guides: true, reviews: true },
       });
 
       return {
@@ -58,8 +72,16 @@ export class ToursService {
 
   async findOne(id: string) {
     try {
-      const tour = await this.db.tour.findUnique({ where: { uId: id } });
-      return { status: 'success', data: tour };
+      const tour = await this.db.tour.findUnique({
+        where: { uId: id },
+        include: {
+          reviews: {
+            include: { User: { select: { id: true, name: true } } },
+          },
+        },
+      });
+
+      return { status: 'success', tour };
     } catch (e) {
       return { status: 'fail', error: e };
     }
@@ -69,7 +91,7 @@ export class ToursService {
     try {
       const updateTour = await this.db.tour.update({
         where: { uId },
-        data: updateTourDto,
+        data: { ...updateTourDto, guides: {} },
       });
 
       return { status: 'success', data: updateTour };
