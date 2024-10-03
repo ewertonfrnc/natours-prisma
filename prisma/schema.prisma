@@ -45,6 +45,7 @@ model User {
   name              String
   email             String   @unique
   photo             String?
+  active            Boolean  @default(true)
   password          String
   passwordConfirm   String
   passwordChangedAt DateTime @default(now())

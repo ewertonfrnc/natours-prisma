@@ -23,6 +23,13 @@ export class UsersController {
   getMe(@ReqUser() user: User) {
     return this.usersService.getMe(user);
   }
+
+  @Roles(Role.Admin)
+  @Post('batch')
+  createBatch(@Body() batch: User[]) {
+    return this.usersService.createBatch(batch);
+  }
+
   @Roles(Role.Admin)
   @Post()
   create(@Body() createUserDto: CreateUserDto) {

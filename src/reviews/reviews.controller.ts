@@ -12,6 +12,8 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
+import { Public } from '../auth/decorators/public.decorator';
+import { Review } from '@prisma/client';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -21,6 +23,12 @@ export class ReviewsController {
   @Post()
   create(@Body() createReviewDto: CreateReviewDto) {
     return this.reviewsService.create(createReviewDto);
+  }
+
+  @Public()
+  @Post('batch')
+  createBatch(@Body() batch: Review[]) {
+    return this.reviewsService.createBatch(batch);
   }
 
   @Get()

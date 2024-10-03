@@ -8,8 +8,12 @@ import { User } from '@prisma/client';
 export class UsersService {
   constructor(private db: DatabaseService) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const user = await this.db.user.create({
+      data: createUserDto,
+    });
+
+    return { status: 'success', user };
   }
 
   async findAll() {
@@ -35,5 +39,18 @@ export class UsersService {
 
   getMe(user: User) {
     return { status: 'success', user };
+  }
+
+  async createBatch(batch: User[]) {
+    try {
+      const users = await this.db.user.createManyAndReturn({
+        data: batch,
+        skipDuplicates: true,
+      });
+
+      return { status: 'success', results: users.length, users };
+    } catch (e) {
+      return { status: 'failed', error: e };
+    }
   }
 }

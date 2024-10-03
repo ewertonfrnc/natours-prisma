@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { DatabaseService } from '../database/database.service';
+import { Review } from '@prisma/client';
 
 @Injectable()
 export class ReviewsService {
@@ -56,6 +57,19 @@ export class ReviewsService {
       const reviews = await this.db.review.findMany({
         where: { tourId },
         include: { User: { select: { name: true } } },
+      });
+
+      return { status: 'success', results: reviews.length, reviews };
+    } catch (e) {
+      return { status: 'failed', error: e };
+    }
+  }
+
+  async createBatch(batch: Review[]) {
+    try {
+      const reviews = await this.db.review.createManyAndReturn({
+        data: batch,
+        skipDuplicates: true,
       });
 
       return { status: 'success', results: reviews.length, reviews };
