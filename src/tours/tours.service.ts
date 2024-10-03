@@ -4,7 +4,6 @@ import { DatabaseService } from '../database/database.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { TourQueries } from './entities/tour.entity';
-import { getFields } from '../utils/api-features.utils';
 
 @Injectable()
 export class ToursService {
@@ -50,18 +49,15 @@ export class ToursService {
           })
         : [{ createdAt: 'desc' }];
 
-      const fields = query.fields ? getFields(query.fields.split(',')) : null;
-
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 100;
       const skip = (page - 1) * limit;
 
       const tours = await this.db.tour.findMany({
-        orderBy: sortBy,
-        select: fields,
         skip,
         take: limit,
-        // include: { guides: true },
+        orderBy: sortBy,
+        include: { guides: true, reviews: true },
       });
 
       return {

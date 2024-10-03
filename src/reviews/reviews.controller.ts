@@ -13,7 +13,8 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { Public } from '../auth/decorators/public.decorator';
-import { Review } from '@prisma/client';
+import { Review, User } from '@prisma/client';
+import { User as ReqUser } from '../utils/decorators/user.decorator';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -43,13 +44,13 @@ export class ReviewsController {
 
   @Roles(Role.User, Role.Admin)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
-    return this.reviewsService.update(+id, updateReviewDto);
-  }
+  update(
+    @Param('id') id: string,
+    @ReqUser() user: User,
+    @Body() updateReviewDto: UpdateReviewDto,
+  ) {
+    if (!updateReviewDto.userId) updateReviewDto.userId = user.id;
 
-  @Roles(Role.User, Role.Admin)
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reviewsService.remove(+id);
+    return this.reviewsService.update(id, updateReviewDto);
   }
 }

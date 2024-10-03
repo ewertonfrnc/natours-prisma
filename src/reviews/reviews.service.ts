@@ -8,6 +8,23 @@ import { Review } from '@prisma/client';
 export class ReviewsService {
   constructor(private db: DatabaseService) {}
 
+  async calcAverageRatings(tourId: number) {
+    const stats = await this.db.review.aggregate({
+      where: { tourId: tourId },
+      _count: { review: true },
+      _avg: { rating: true },
+    });
+
+    await this.db.tour.update({
+      where: { id: tourId },
+      data: {
+        ratingsQuantity: stats._count.review,
+        ratingsAverage: stats._avg.rating,
+      },
+    });
+    console.log('calcAverageRatings', { stats });
+  }
+
   async create(createReviewDto: CreateReviewDto) {
     try {
       const review = await this.db.review.create({
@@ -19,9 +36,11 @@ export class ReviewsService {
         },
       });
 
+      await this.calcAverageRatings(createReviewDto.tourId);
+
       return { status: 'success', review };
     } catch (e) {
-      return { status: 'success', error: e };
+      return { status: 'fail', error: e };
     }
   }
 
@@ -40,16 +59,34 @@ export class ReviewsService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} review`;
+  async findOne(id: number) {
+    return 'this action find one review';
   }
 
-  update(id: number, updateReviewDto: UpdateReviewDto) {
-    return `This action updates a #${id} review`;
+  async update(id: string, updateReviewDto: UpdateReviewDto) {
+    try {
+      const review = await this.db.review.update({
+        where: { id },
+        data: updateReviewDto,
+      });
+
+      await this.calcAverageRatings(updateReviewDto.tourId);
+
+      return { status: 'success', review };
+    } catch (e) {
+      return { status: 'fail', error: e };
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} review`;
+  async remove(reviewId: string, tourId: number) {
+    try {
+      await this.db.review.delete({ where: { id: reviewId } });
+      await this.calcAverageRatings(tourId);
+
+      return { status: 'success' };
+    } catch (e) {
+      return { status: 'fail', error: e };
+    }
   }
 
   async findTourReviews(tourId: number) {

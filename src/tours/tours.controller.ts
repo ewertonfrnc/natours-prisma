@@ -20,6 +20,7 @@ import { ReviewsService } from '../reviews/reviews.service';
 import { CreateReviewDto } from '../reviews/dto/create-review.dto';
 import { User as ReqUser } from '../utils/decorators/user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { UpdateReviewDto } from '../reviews/dto/update-review.dto';
 
 @Controller('tours')
 export class ToursController {
@@ -59,6 +60,7 @@ export class ToursController {
     return this.toursService.remove(id);
   }
 
+  @Roles(Role.User, Role.Admin)
   @Post(':tourId/reviews')
   createTourReview(
     @Param('tourId') tourId: string,
@@ -69,6 +71,29 @@ export class ToursController {
     if (!dto.userId) dto.userId = user.id;
 
     return this.reviewService.create(dto);
+  }
+
+  @Roles(Role.User, Role.Admin)
+  @Patch('/:tourId/reviews/:reviewId')
+  updateTourReview(
+    @Param('tourId') tourId: string,
+    @Param('reviewId') reviewId: string,
+    @ReqUser() user: User,
+    @Body() dto: UpdateReviewDto,
+  ) {
+    if (!dto.tourId) dto.tourId = +tourId;
+    if (!dto.userId) dto.userId = user.id;
+
+    return this.reviewService.update(reviewId, dto);
+  }
+
+  @Roles(Role.User, Role.Admin)
+  @Delete('/:tourId/reviews/:reviewId')
+  deleteTourReview(
+    @Param('tourId') tourId: number,
+    @Param('reviewId') reviewId: string,
+  ) {
+    return this.reviewService.remove(reviewId, +tourId);
   }
 
   @Get(':tourId/reviews')
