@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import { LoginAuthDto, SignAuthDto } from './dto/auth.dto';
@@ -45,25 +45,31 @@ export class AuthService {
   }
 
   async login(loginAuthDto: LoginAuthDto) {
-    try {
-      const user = await this.db.user.findUnique({
-        where: { email: loginAuthDto.email },
-      });
+    const user = await this.db.user.findUnique({
+      where: { email: loginAuthDto.email },
+    });
 
-      const samePassword = await bcrypt.compare(
-        loginAuthDto.password,
-        user.password,
+    const samePassword = await bcrypt.compare(
+      loginAuthDto.password,
+      user.password,
+    );
+
+    if (!user || !samePassword) {
+      throw new HttpException(
+        {
+          status: 'fail',
+          error: 'Incorrect email or password',
+        },
+        HttpStatus.UNAUTHORIZED,
       );
-
-      if (!user || !samePassword) {
-        return new UnauthorizedException('Incorrect email or password');
-      }
-
-      const token = this.signToken(user.id);
-
-      return { status: 'success', token };
-    } catch (e) {
-      return { status: 'fail', error: e.message };
     }
+
+    const token = this.signToken(user.id);
+
+    delete user.password;
+    delete user.passwordConfirm;
+    delete user.passwordChangedAt;
+
+    return { status: 'success', user, token };
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 
 import { CreateTourDto } from './dto/create-tour.dto';
@@ -47,7 +47,7 @@ export class ToursService {
             const field = isDescending ? sortField.slice(1) : sortField;
             return { [field]: isDescending ? 'desc' : 'asc' };
           })
-        : [{ createdAt: 'desc' }];
+        : [{ createdAt: 'asc' }];
 
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 100;
@@ -57,7 +57,7 @@ export class ToursService {
         skip,
         take: limit,
         orderBy: sortBy,
-        include: { guides: true, reviews: true },
+        // include: { guides: true, reviews: true },
       });
 
       return {
@@ -71,20 +71,27 @@ export class ToursService {
   }
 
   async findOne(id: string) {
-    try {
-      const tour = await this.db.tour.findUnique({
-        where: { uId: id },
-        include: {
-          reviews: {
-            include: { User: { select: { id: true, name: true } } },
-          },
+    const tour = await this.db.tour.findUnique({
+      where: { uId: id },
+      include: {
+        reviews: {
+          include: { User: { select: { id: true, name: true } } },
         },
-      });
+        guides: true,
+      },
+    });
 
-      return { status: 'success', tour };
-    } catch (e) {
-      return { status: 'fail', error: e };
+    if (!tour) {
+      throw new HttpException(
+        {
+          status: 'fail',
+          error: `No tour with the id (${id}) was found.`,
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
+
+    return { status: 'success', tour };
   }
 
   async update(uId: string, updateTourDto: UpdateTourDto) {

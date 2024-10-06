@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from '../database/database.service';
@@ -29,8 +29,23 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.db.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
+
+    if (!user) {
+      throw new HttpException(
+        {
+          status: 'fail',
+          error: `No user with the id (${id}) was found.`,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return { status: 'success', user };
   }
 
   remove(id: number) {
