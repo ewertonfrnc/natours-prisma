@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -36,7 +38,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.User)
   @Get()
   findAll() {
     return this.usersService.findAll();
@@ -54,9 +56,10 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Roles(Role.Admin)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles(Role.Admin, Role.User)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  remove(@ReqUser() user: User) {
+    return this.usersService.deleteMe(user.id);
   }
 }

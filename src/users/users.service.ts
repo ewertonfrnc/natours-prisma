@@ -18,7 +18,9 @@ export class UsersService {
 
   async findAll() {
     try {
-      const users = await this.db.user.findMany();
+      const users = await this.db.user.findMany({
+        where: { active: true },
+      });
       return { status: 'success', data: users };
     } catch (e) {
       return { status: 'failed', error: e };
@@ -30,9 +32,16 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.password || updateUserDto.passwordConfirm) {
+      throw new HttpException(
+        { status: 'fail', message: "It's not possible to update password" },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const user = await this.db.user.update({
       where: { id },
-      data: updateUserDto,
+      data: { name: updateUserDto.name, email: updateUserDto.email },
     });
 
     if (!user) {
@@ -50,6 +59,15 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async deleteMe(userId: string) {
+    await this.db.user.update({
+      where: { id: userId },
+      data: { active: false },
+    });
+
+    return { status: 'success', data: null };
   }
 
   getMe(user: User) {
