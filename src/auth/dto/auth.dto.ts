@@ -44,5 +44,43 @@ export class LoginAuthDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
   password: string;
+}
+
+export class ForgotPassDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  @Match('password', { message: 'Passwords do not match' })
+  passwordConfirm: string;
+}
+
+export class UpdatePasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  currentPassword: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  newPassword: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  @Match('newPassword', { message: 'Passwords do not match' })
+  newPasswordConfirm: string;
 }

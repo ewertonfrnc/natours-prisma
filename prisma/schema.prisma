@@ -42,14 +42,16 @@ model Tour {
 model User {
   id String @id @unique @default(uuid())
 
-  name              String
-  email             String   @unique
-  photo             String?
-  active            Boolean  @default(true)
-  password          String
-  passwordConfirm   String
-  passwordChangedAt DateTime @default(now())
-  roles             String[] @default(["user"])
+  name                 String
+  email                String    @unique
+  photo                String?
+  active               Boolean   @default(true)
+  password             String
+  passwordConfirm      String
+  passwordChangedAt    DateTime  @default(now())
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  roles                String[]  @default(["user"])
 
   tours   Tour[]
   reviews Review[]
